@@ -1,6 +1,11 @@
-﻿using API.Models;
+﻿using API.DTOs;
+using API.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace API.Controllers
 {
@@ -35,48 +40,70 @@ namespace API.Controllers
 
             return Ok(stable);
         }
+        [Authorize]
+        [HttpPost]
+        [ProducesResponseType(typeof(Stable), 201)]
+        [ProducesResponseType(400)]
+        public async Task<ActionResult<Stable>> CreateStable([FromBody] CreateStableDto dto)
+        {
 
-        //[HttpPost]
-        //[ProducesResponseType(typeof(Stable), 201)]
-        //[ProducesResponseType(400)]
-        //public async Task<ActionResult<Stable>> CreateStable([FromBody] CreateStableDto dto)
-        //{
-        //    var stable = new Stable
-        //    {
-        //        Name = dto.Name,
-        //        Address = dto.Address
-        //    };
+            string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+                return Unauthorized();
 
-        //    _context.Stables.Add(stable);
-        //    await _context.SaveChangesAsync();
+            var stable = new Stable
+            {
+                Name = dto.Name,
+                Address = dto.Address,
+                OwnerId = userId
+            };
 
-        //    return CreatedAtAction(nameof(GetStable), new { id = stable.Id }, stable);
-        //}
+            _context.Stables.Add(stable);
+            await _context.SaveChangesAsync();
 
-        //[HttpPut("{id}")]
-        //[ProducesResponseType(204)]
-        //[ProducesResponseType(404)]
-        //public async Task<IActionResult> UpdateStable(int id, [FromBody] CreateStableDto dto)
-        //{
-        //    var stable = await _context.Stables.FindAsync(id);
-        //    if (stable == null)
-        //        return NotFound();
+            return CreatedAtAction(nameof(GetStable), new { id = stable.Id }, stable);
+        }
 
-        //    stable.Name = dto.Name;
-        //    stable.Address = dto.Address;
+        [Authorize]
+        [HttpPut("{id}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> UpdateStable(int id, [FromBody] CreateStableDto dto)
+        {
+            string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+                return Unauthorized();
 
-        //    await _context.SaveChangesAsync();
-        //    return NoContent();
-        //}
+            var stable = await _context.Stables.FindAsync(id);
+            if (stable == null)
+                return NotFound();
 
+            if (stable.OwnerId != userId)
+                return Forbid();
+
+            stable.Name = dto.Name;
+            stable.Address = dto.Address;
+
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
+        [Authorize]
         [HttpDelete("{id}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> DeleteStable(int id)
         {
+            string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+                return Unauthorized();
+
             var stable = await _context.Stables.FindAsync(id);
             if (stable == null)
                 return NotFound();
+
+            if (stable.OwnerId != userId)
+                return Forbid();
 
             _context.Stables.Remove(stable);
             await _context.SaveChangesAsync();

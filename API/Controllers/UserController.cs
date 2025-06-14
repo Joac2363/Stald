@@ -5,16 +5,19 @@
     using API.Models;
     using API.DTOs;
     using Microsoft.EntityFrameworkCore;
+    using API.Auth;
 
     [ApiController]
     [Route("api/[controller]")]
     public class UsersController : ControllerBase
     {
+        private readonly JwtTokenService _jwtTokenService;
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
 
-        public UsersController(UserManager<User> userManager, SignInManager<User> signInManager)
+        public UsersController(JwtTokenService jwtTokenService, UserManager<User> userManager, SignInManager<User> signInManager)
         {
+            _jwtTokenService = jwtTokenService;
             _userManager = userManager;
             _signInManager = signInManager;
         }
@@ -62,7 +65,13 @@
             if (!result.Succeeded)
                 return Unauthorized(new { message = "Invalid email or password" });
 
-            return Ok(new { message = "Login successful", userId = user.Id, email = user.Email });
+            var token = _jwtTokenService.GenerateToken(user);
+
+            return Ok(new { 
+                message = "Login successful", 
+                token,
+                userId = user.Id, 
+                email = user.Email });
         }
     }
 

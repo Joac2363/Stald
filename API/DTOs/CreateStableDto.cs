@@ -1,13 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
-namespace API.Models
+namespace API.DTOs
 {
-    public class Stable
+    public class CreateStableDto
     {
-        [Key]
-        public int Id { get; set; }
-
         [Required(ErrorMessage = "Stable name is required.")]
         [StringLength(100, ErrorMessage = "Stable name cannot be longer than 100 characters.")]
         public string Name { get; set; }
@@ -15,11 +11,5 @@ namespace API.Models
         [Required(ErrorMessage = "Address is required.")]
         [StringLength(200, ErrorMessage = "Address cannot be longer than 200 characters.")]
         public string Address { get; set; }
-
-        [Required(ErrorMessage = "Owner is required")]
-        public string OwnerId { get; set; }
-        [ForeignKey(nameof(OwnerId))]
-        public User Owner { get; set; }
     }
-
 }
