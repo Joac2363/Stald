@@ -10,6 +10,8 @@ public class DbContext : IdentityDbContext<User>
 
     }
     public DbSet<Stable> Stables { get; set; }
+    public DbSet<Media> Media { get; set; }
+    public DbSet<Post> Posts { get; set; }
 
     // Define your DbSets:
     // public DbSet<Product> Products { get; set; }
