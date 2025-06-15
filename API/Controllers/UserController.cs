@@ -38,7 +38,7 @@
             if (!result.Succeeded)
                 return BadRequest(result.Errors);
 
-            return Ok(new { user.Id, user.Email });
+            return Ok();
         }
 
         // Not needed ATM

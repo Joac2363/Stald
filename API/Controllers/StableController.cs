@@ -43,9 +43,9 @@ namespace API.Controllers
         }
         
         [HttpPost]
-        [ProducesResponseType(typeof(Stable), 201)]
+        [ProducesResponseType(201)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<Stable>> CreateStable([FromBody] CreateStableDto dto)
+        public async Task<IActionResult> CreateStable([FromBody] CreateStableDto dto)
         {
 
             string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -59,10 +59,10 @@ namespace API.Controllers
                 OwnerId = userId
             };
 
-            _context.Stables.Add(stable);
+            await _context.Stables.AddAsync(stable);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetStable), new { id = stable.Id }, stable);
+            return StatusCode(201);
         }
 
         

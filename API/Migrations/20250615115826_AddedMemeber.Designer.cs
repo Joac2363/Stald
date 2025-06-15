@@ -11,7 +11,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(DbContext))]
-    [Migration("20250615113953_AddedMemeber")]
+    [Migration("20250615115826_AddedMemeber")]
     partial class AddedMemeber
     {
         /// <inheritdoc />
@@ -57,7 +57,7 @@ namespace API.Migrations
                     b.ToTable("Media");
                 });
 
-            modelBuilder.Entity("API.Models.Memeber", b =>
+            modelBuilder.Entity("API.Models.Member", b =>
                 {
                     b.Property<string>("UserId")
                         .HasColumnType("text");
@@ -343,7 +343,7 @@ namespace API.Migrations
                     b.Navigation("Post");
                 });
 
-            modelBuilder.Entity("API.Models.Memeber", b =>
+            modelBuilder.Entity("API.Models.Member", b =>
                 {
                     b.HasOne("API.Models.Stable", "Stable")
                         .WithMany()
@@ -352,8 +352,8 @@ namespace API.Migrations
                         .IsRequired();
 
                     b.HasOne("API.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
+                        .WithOne("Member")
+                        .HasForeignKey("API.Models.Member", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -438,6 +438,12 @@ namespace API.Migrations
             modelBuilder.Entity("API.Models.Post", b =>
                 {
                     b.Navigation("MediaItems");
+                });
+
+            modelBuilder.Entity("API.Models.User", b =>
+                {
+                    b.Navigation("Member")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

@@ -12,10 +12,16 @@ namespace API.Models
         [ForeignKey(nameof(StableId))]
         public Stable Stable { get; set; }
         
-        [Required]
+        [Required(ErrorMessage = "Title is required.")]
         [StringLength(50, ErrorMessage = "Title cannot be longer than 50 characters.")]
         public string Title { get; set; }
         public string Text { get; set; }
+        [Required(ErrorMessage = "Creation date is required.")]
+        public DateTime CreatedDate { get; set; }
+        [Required(ErrorMessage = "User (creator) is required.")]
+        public string UserId { get; set; }
+        [ForeignKey(nameof(UserId))]
+        public User User { get; set; }
         public ICollection<Media> MediaItems { get; set; }
 
     }
