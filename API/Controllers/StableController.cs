@@ -9,6 +9,7 @@ using System.Security.Claims;
 
 namespace API.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class StableController : ControllerBase
@@ -40,7 +41,7 @@ namespace API.Controllers
 
             return Ok(stable);
         }
-        [Authorize]
+        
         [HttpPost]
         [ProducesResponseType(typeof(Stable), 201)]
         [ProducesResponseType(400)]
@@ -64,7 +65,7 @@ namespace API.Controllers
             return CreatedAtAction(nameof(GetStable), new { id = stable.Id }, stable);
         }
 
-        [Authorize]
+        
         [HttpPut("{id}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
@@ -88,7 +89,7 @@ namespace API.Controllers
             return NoContent();
         }
 
-        [Authorize]
+        
         [HttpDelete("{id}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
