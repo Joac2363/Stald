@@ -12,7 +12,7 @@ namespace API.DTOs
         [StringLength(50, ErrorMessage = "Title cannot be longer than 50 characters.")]
         public string Title { get; set; }
         public string Text { get; set; }
-        public ICollection<Media> MediaItems { get; set; }
+        
 
     }
 }
