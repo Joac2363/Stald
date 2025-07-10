@@ -13,7 +13,6 @@ public class DbContext : IdentityDbContext<User>
     public DbSet<Media> Media { get; set; }
     public DbSet<Post> Posts { get; set; }
     public DbSet<Member> Members { get; set; }
-
-    // Define your DbSets:
-    // public DbSet<Product> Products { get; set; }
+    public DbSet<Area> Areas { get; set; }
+    public DbSet<Box> Boxes { get; set; }
 }
