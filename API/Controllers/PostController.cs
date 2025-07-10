@@ -79,5 +79,39 @@ namespace API.Controllers
             return StatusCode(201);
 
         }
+
+        [HttpPost("stable/{id}/post/{pid}")] // Stable id
+        [ProducesResponseType(401)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(200)]
+        public async Task<IActionResult> DeletePost(int id, int pid)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+                return Unauthorized();
+
+            bool stableExists = await _context.Stables.AnyAsync(s => s.Id == id);
+            if (!stableExists)
+                return NotFound();
+
+            bool userIsMember = await _context.Members.AnyAsync(m => m.UserId == userId && m.StableId == id);
+            if (!userIsMember)
+                return Unauthorized();
+
+            bool postExists = await _context.Posts.AnyAsync(p => p.Id == pid);
+            if (!postExists) 
+                return NotFound();
+
+            Post post = await _context.Posts.FirstAsync(p => p.Id == id);
+            if (post.UserId != userId)
+                return Unauthorized();
+
+            
+            _context.Remove(post);
+            await _context.SaveChangesAsync();
+            return NoContent();
+
+        }
     }
 }
