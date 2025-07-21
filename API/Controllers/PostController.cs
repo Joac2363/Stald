@@ -112,6 +112,8 @@ namespace API.Controllers
             await _context.SaveChangesAsync();
             return NoContent();
 
+            // TODO:
+            // Add checks for if user is employee (So both members and employees can post)
         }
     }
 }
