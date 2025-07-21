@@ -80,7 +80,7 @@ namespace API.Controllers
                 return NotFound();
 
             if (stable.OwnerId != userId)
-                return Forbid();
+                return Unauthorized();
 
             stable.Name = dto.Name;
             stable.Address = dto.Address;
