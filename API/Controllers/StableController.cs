@@ -85,7 +85,9 @@ namespace API.Controllers
             stable.Name = dto.Name;
             stable.Address = dto.Address;
 
+            _context.Stables.Update(stable);
             await _context.SaveChangesAsync();
+
             return NoContent();
         }
 
@@ -104,7 +106,7 @@ namespace API.Controllers
                 return NotFound();
 
             if (stable.OwnerId != userId)
-                return Forbid();
+                return Unauthorized();
 
             _context.Stables.Remove(stable);
             await _context.SaveChangesAsync();
