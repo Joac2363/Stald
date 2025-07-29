@@ -80,7 +80,7 @@ namespace API.Controllers
 
         }
 
-        [HttpPost("stable/{id}/post/{pid}")] // Stable id
+        [HttpDelete("stable/{id}/post/{pid}")] // Stable id
         [ProducesResponseType(401)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
