@@ -21,7 +21,7 @@ namespace API.Models
         [ForeignKey(nameof(OwnerId))]
         public User Owner { get; set; }
 
-        ICollection<Area> Areas { get; set; }
+        public ICollection<Area> Areas { get; set; }
     }
 
 }

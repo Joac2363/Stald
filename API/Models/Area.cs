@@ -15,6 +15,6 @@ namespace API.Models
         [ForeignKey(nameof(StableId))]
         public Stable Stable { get; set; }
 
-        ICollection<Box> Boxes { get; set; }
+        public ICollection<Box> Boxes { get; set; }
     }
 }
