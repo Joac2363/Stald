@@ -1,4 +1,5 @@
-﻿using API.Models;
+﻿using API.DTOs;
+using API.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -17,7 +18,7 @@ namespace API.Controllers
             _context = context;
         }
 
-        [HttpGet("stable/{id}/area")]
+        [HttpGet("stable/{id}")]
         [ProducesResponseType(401)]
         [ProducesResponseType(400)]
         [ProducesResponseType(typeof(IEnumerable<Area>), 200)]
@@ -38,8 +39,88 @@ namespace API.Controllers
             IEnumerable<Area> areas = await _context.Areas
                 .Where(a => a.StableId == id)
                 .ToArrayAsync();
-            
+
             return Ok(areas);
         }
+
+        [HttpPost("stable/{id}")]
+        [ProducesResponseType(201)]
+        [ProducesResponseType(400)]
+        public async Task<IActionResult> Create([FromBody] CreateAreaDto dto, int id)
+        {
+            string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+                return Unauthorized();
+
+            bool userIsOwnerOfStable = await _context.Stables.AnyAsync(s => s.Id == id && s.OwnerId == userId);
+            if (!userIsOwnerOfStable)
+                return Unauthorized();
+            
+            var Area = new Area
+            {
+                Name = dto.Name,
+                StableId = dto.StableId
+            };
+
+            await _context.Areas.AddAsync(Area);
+            await _context.SaveChangesAsync();
+
+            return StatusCode(201);
+        }
+
+        [HttpPut("stable/{stableId}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> Update([FromBody] UpdateAreaDto area, int stableId)
+        {
+            string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+                return Unauthorized();
+
+            var stable = await _context.Stables.FindAsync(stableId);
+            if (stable == null) 
+                return NotFound();
+
+            if (stable.OwnerId != userId)
+                return Unauthorized();
+
+            var oldArea = await _context.Areas.FindAsync(area.Id);
+            if (oldArea == null) 
+                return NotFound();
+
+            oldArea.Name = area.Name;
+
+            _context.Areas.Update(oldArea);
+            await _context.SaveChangesAsync();
+            
+            return NoContent();
+
+        }
+
+        [HttpDelete("{id}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> Delete(int id)
+        {
+            string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+                return Unauthorized();
+
+            var area = await _context.Areas.Include(a => a.Stable).FirstAsync(a => a.Id == id);
+            if (area == null)
+                return NotFound();
+
+            if (area.Stable.OwnerId != userId)
+                return Unauthorized();
+
+            _context.Areas.Remove(area);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        //TODO:
+        // Make employees able to Create update and delete areas
+        // Add GreenArea option
     }
 }
