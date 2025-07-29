@@ -20,6 +20,8 @@ namespace API.Models
         public string OwnerId { get; set; }
         [ForeignKey(nameof(OwnerId))]
         public User Owner { get; set; }
+
+        ICollection<Area> Areas { get; set; }
     }
 
 }
