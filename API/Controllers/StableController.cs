@@ -11,7 +11,7 @@ namespace API.Controllers
 {
     [Authorize]
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/stable")]
     public class StableController : ControllerBase
     {
         private readonly DbContext _context;
@@ -30,12 +30,12 @@ namespace API.Controllers
         //    return Ok(stables);
         //}
 
-        [HttpGet("{id}")]
+        [HttpGet("{stableId}")]
         [ProducesResponseType(typeof(Stable), 200)]
         [ProducesResponseType(404)]
-        public async Task<ActionResult<Stable>> GetStable(int id)
+        public async Task<ActionResult<Stable>> GetStable(int stableId)
         {
-            var stable = await _context.Stables.FindAsync(id);
+            var stable = await _context.Stables.FindAsync(stableId);
             if (stable == null)
                 return NotFound();
 
@@ -66,16 +66,16 @@ namespace API.Controllers
         }
 
         
-        [HttpPut("{id}")]
+        [HttpPut("{stableId}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> UpdateStable(int id, [FromBody] CreateStableDto dto)
+        public async Task<IActionResult> UpdateStable(int stableId, [FromBody] CreateStableDto dto)
         {
             string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null)
                 return Unauthorized();
 
-            var stable = await _context.Stables.FindAsync(id);
+            var stable = await _context.Stables.FindAsync(stableId);
             if (stable == null)
                 return NotFound();
 
@@ -92,16 +92,16 @@ namespace API.Controllers
         }
 
         
-        [HttpDelete("{id}")]
+        [HttpDelete("{stableId}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> DeleteStable(int id)
+        public async Task<IActionResult> DeleteStable(int stableId)
         {
             string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null)
                 return Unauthorized();
 
-            var stable = await _context.Stables.FindAsync(id);
+            var stable = await _context.Stables.FindAsync(stableId);
             if (stable == null)
                 return NotFound();
 

@@ -8,7 +8,7 @@
     using API.Auth;
 
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/user")]
     public class UsersController : ControllerBase
     {
         private readonly JwtTokenService _jwtTokenService;

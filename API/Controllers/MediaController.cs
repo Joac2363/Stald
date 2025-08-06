@@ -8,7 +8,7 @@ namespace API.Controllers
 {
     [Authorize]
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api")]
     public class MediaController : ControllerBase
     {
         private readonly DbContext _context;
@@ -17,17 +17,17 @@ namespace API.Controllers
             _context = context;
         }
 
-        [HttpGet("post/{id}")] // Post id
+        [HttpGet("stable/post/{postId}/media")] // Post id
         [ProducesResponseType(401)]
         [ProducesResponseType(400)]
         [ProducesResponseType(typeof(IEnumerable<Media>), 200)]
-        public async Task<ActionResult<IEnumerable<Media>>> Get(int id)
+        public async Task<ActionResult<IEnumerable<Media>>> Get(int postId)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null)
                 return Unauthorized();
 
-            bool postExists = await _context.Posts.AnyAsync(p => p.Id == id);
+            bool postExists = await _context.Posts.AnyAsync(p => p.Id == postId);
             if (!postExists)
                 return BadRequest();
 
@@ -42,7 +42,7 @@ namespace API.Controllers
             //    .ToListAsync();
 
             var media = await _context.Media
-                .Where(m => m.PostId == id)
+                .Where(m => m.PostId == postId)
                 .ToArrayAsync();
 
             return Ok(media);

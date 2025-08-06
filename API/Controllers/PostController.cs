@@ -9,7 +9,7 @@ namespace API.Controllers
 {
     [Authorize]
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api")]
     public class PostController : ControllerBase
     {
         private readonly DbContext _context;
@@ -18,21 +18,21 @@ namespace API.Controllers
             _context = context;
         }
 
-        [HttpGet("stable/{id}")] // Stable id
+        [HttpGet("stable/{stableId}/posts")] // Stable id
         [ProducesResponseType(401)]
         [ProducesResponseType(400)]
         [ProducesResponseType(typeof(IEnumerable<Post>), 200)]
-        public async Task<ActionResult<IEnumerable<Post>>> GetAll(int id, [FromQuery] int page, [FromQuery] int postsPerPage)
+        public async Task<ActionResult<IEnumerable<Post>>> GetAll(int stableId, [FromQuery] int page, [FromQuery] int postsPerPage)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null)
                 return Unauthorized();
 
-            bool stableExists = await _context.Stables.AnyAsync(s => s.Id == id);
+            bool stableExists = await _context.Stables.AnyAsync(s => s.Id == stableId);
             if (!stableExists)
                 return BadRequest();
 
-            bool userIsMember = await _context.Members.AnyAsync(m => m.UserId == userId && m.StableId == id);
+            bool userIsMember = await _context.Members.AnyAsync(m => m.UserId == userId && m.StableId == stableId);
             if (!userIsMember)
                 return Unauthorized();
 
@@ -47,21 +47,21 @@ namespace API.Controllers
             return Ok(posts);
         }
 
-        [HttpPost("stable/{id}")] // Stable id
+        [HttpPost("stable/{stableId}/post")] // Stable id
         [ProducesResponseType(401)]
         [ProducesResponseType(400)]
         [ProducesResponseType(200)]
-        public async Task<IActionResult> CreatePost(int id, [FromBody] CreatePostDto dto)
+        public async Task<IActionResult> CreatePost(int stableId, [FromBody] CreatePostDto dto)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null)
                 return Unauthorized();
 
-            bool stableExists = await _context.Stables.AnyAsync(s => s.Id == id);
+            bool stableExists = await _context.Stables.AnyAsync(s => s.Id == stableId);
             if (!stableExists)
                 return BadRequest();
 
-            bool userIsMember = await _context.Members.AnyAsync(m => m.UserId == userId && m.StableId == id);
+            bool userIsMember = await _context.Members.AnyAsync(m => m.UserId == userId && m.StableId == stableId);
             if (!userIsMember)
                 return Unauthorized();
 
@@ -80,30 +80,30 @@ namespace API.Controllers
 
         }
 
-        [HttpDelete("stable/{id}/post/{pid}")] // Stable id
+        [HttpDelete("stable/{stableId}/post/{postId}")] // Stable id
         [ProducesResponseType(401)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
         [ProducesResponseType(200)]
-        public async Task<IActionResult> DeletePost(int id, int pid)
+        public async Task<IActionResult> DeletePost(int stableId, int postId)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null)
                 return Unauthorized();
 
-            bool stableExists = await _context.Stables.AnyAsync(s => s.Id == id);
+            bool stableExists = await _context.Stables.AnyAsync(s => s.Id == stableId);
             if (!stableExists)
                 return NotFound();
 
-            bool userIsMember = await _context.Members.AnyAsync(m => m.UserId == userId && m.StableId == id);
+            bool userIsMember = await _context.Members.AnyAsync(m => m.UserId == userId && m.StableId == stableId);
             if (!userIsMember)
                 return Unauthorized();
 
-            bool postExists = await _context.Posts.AnyAsync(p => p.Id == pid);
+            bool postExists = await _context.Posts.AnyAsync(p => p.Id == postId);
             if (!postExists) 
                 return NotFound();
 
-            Post post = await _context.Posts.FirstAsync(p => p.Id == id);
+            Post post = await _context.Posts.FirstAsync(p => p.Id == stableId);
             if (post.UserId != userId)
                 return Unauthorized();
 

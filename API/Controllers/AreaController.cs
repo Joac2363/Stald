@@ -9,7 +9,7 @@ namespace API.Controllers
 {
     [Authorize]
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api")]
     public class AreaController : ControllerBase
     {
         private readonly DbContext _context;
@@ -18,41 +18,41 @@ namespace API.Controllers
             _context = context;
         }
 
-        [HttpGet("stable/{id}")]
+        [HttpGet("stable/{stableId}/areas")]
         [ProducesResponseType(401)]
         [ProducesResponseType(400)]
         [ProducesResponseType(typeof(IEnumerable<Area>), 200)]
-        public async Task<ActionResult<IEnumerable<Area>>> Get(int id)
+        public async Task<ActionResult<IEnumerable<Area>>> Get(int stableId)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null)
                 return Unauthorized();
 
-            bool userIsMember = await _context.Members.AnyAsync(m => m.UserId == userId && m.StableId == id);
+            bool userIsMember = await _context.Members.AnyAsync(m => m.UserId == userId && m.StableId == stableId);
             if (!userIsMember)
                 return Unauthorized();
 
-            bool stableExists = await _context.Stables.AnyAsync(s => s.Id == id);
+            bool stableExists = await _context.Stables.AnyAsync(s => s.Id == stableId);
             if (!stableExists)
                 return BadRequest();
 
             IEnumerable<Area> areas = await _context.Areas
-                .Where(a => a.StableId == id)
+                .Where(a => a.StableId == stableId)
                 .ToArrayAsync();
 
             return Ok(areas);
         }
 
-        [HttpPost("stable/{id}")]
+        [HttpPost("stable/{stableId}/area")]
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]
-        public async Task<IActionResult> Create([FromBody] CreateAreaDto dto, int id)
+        public async Task<IActionResult> Create([FromBody] CreateAreaDto dto, int stableId)
         {
             string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null)
                 return Unauthorized();
 
-            bool userIsOwnerOfStable = await _context.Stables.AnyAsync(s => s.Id == id && s.OwnerId == userId);
+            bool userIsOwnerOfStable = await _context.Stables.AnyAsync(s => s.Id == stableId && s.OwnerId == userId);
             if (!userIsOwnerOfStable)
                 return Unauthorized();
             
@@ -68,7 +68,7 @@ namespace API.Controllers
             return StatusCode(201);
         }
 
-        [HttpPut("stable/{stableId}")]
+        [HttpPut("stable/{stableId}/area")]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> Update([FromBody] UpdateAreaDto area, int stableId)
@@ -97,16 +97,16 @@ namespace API.Controllers
 
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("stable/area/{areaId}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(int areaId)
         {
             string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null)
                 return Unauthorized();
 
-            var area = await _context.Areas.Include(a => a.Stable).FirstAsync(a => a.Id == id);
+            var area = await _context.Areas.Include(a => a.Stable).FirstAsync(a => a.Id == areaId);
             if (area == null)
                 return NotFound();
 
