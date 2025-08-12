@@ -1,21 +1,18 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using API.Models;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
-namespace API.Models
+namespace API.DTOs
 {
-    public class Box
+    public class UpdateBoxDto
     {
         [Key]
         public int Id { get; set; }
         [Required(ErrorMessage = "Number is required.")]
         [MaxLength(15, ErrorMessage = "Number may not be longer than 15 characters.")]
-        public string Number {  get; set; } // is string since box number may be: 'E93' or similar.
+        public string Number { get; set; } // is string since box number may be: 'E93' or similar.
         [Required(ErrorMessage = "Box must be connected to an Area.")]
-        public int AreaId {  get; set; }
+        public int AreaId { get; set; }
         [ForeignKey(nameof(AreaId))]
-        public Area Area { get; set; }
-
-        //TODO:
-        // Add horse support (lol)
     }
 }

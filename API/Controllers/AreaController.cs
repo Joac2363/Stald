@@ -43,6 +43,32 @@ namespace API.Controllers
             return Ok(areas);
         }
 
+        [HttpGet("stable/{id}/boxes")]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(typeof(IEnumerable<Area>), 200)]
+        public async Task<ActionResult<IEnumerable<Area>>> GetAreasWithBoxes(int id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+                return Unauthorized();
+
+            bool userIsMember = await _context.Members.AnyAsync(m => m.UserId == userId && m.StableId == id);
+            if (!userIsMember)
+                return Unauthorized();
+
+            bool stableExists = await _context.Stables.AnyAsync(s => s.Id == id);
+            if (!stableExists)
+                return BadRequest();
+
+            IEnumerable<Area> areas = await _context.Areas
+                .Include(a => a.Boxes)
+                .Where(a => a.StableId == id)
+                .ToArrayAsync();
+
+            return Ok(areas);
+        }
+
         [HttpPost("stable/{id}")]
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]
