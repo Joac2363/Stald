@@ -13,6 +13,5 @@ namespace API.DTOs
         public string Number { get; set; } // is string since box number may be: 'E93' or similar.
         [Required(ErrorMessage = "Box must be connected to an Area.")]
         public int AreaId { get; set; }
-        [ForeignKey(nameof(AreaId))]
     }
 }
