@@ -22,6 +22,9 @@ namespace API.Models
         public User Owner { get; set; }
 
         public ICollection<Area> Areas { get; set; }
+
+        // NOTICE
+        // If a stable is deleted, all associated members will be deleted via cascade
     }
 
 }
