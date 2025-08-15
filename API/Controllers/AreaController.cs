@@ -114,7 +114,7 @@ namespace API.Controllers
             if (oldArea == null) 
                 return NotFound();
 
-            oldArea.Name = area.Name;
+            oldArea.Name = area.Name ?? oldArea.Name;
 
             _context.Areas.Update(oldArea);
             await _context.SaveChangesAsync();

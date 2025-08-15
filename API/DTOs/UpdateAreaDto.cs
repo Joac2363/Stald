@@ -7,9 +7,9 @@ namespace API.DTOs
     public class UpdateAreaDto
     {
         [Key]
+        [Required(ErrorMessage = "An area must have an id.")]
         public int Id { get; set; }
-        [Required(ErrorMessage = "An Area must have a name.")]
         [MaxLength(50, ErrorMessage = "An Area name cannot be longer than 50 characters.")]
-        public string Name { get; set; }
+        public string? Name { get; set; }
     }
 }

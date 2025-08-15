@@ -41,7 +41,7 @@ namespace API.Controllers
                 .ToListAsync();
         }
 
-        [HttpPost("stable/{stableId}/member/user/{userId}")] // user id
+        [HttpPost("stable/{stableId}/member/user/{userId}")] 
         [ProducesResponseType(401)]
         [ProducesResponseType(400)]
         [ProducesResponseType(200)]

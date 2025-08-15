@@ -66,10 +66,10 @@ namespace API.Controllers
         }
 
         
-        [HttpPut("{stableId}")]
+        [HttpPut()]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> UpdateStable(int stableId, [FromBody] CreateStableDto dto)
+        public async Task<IActionResult> UpdateStable(int stableId, [FromBody] UpdateStableDto dto)
         {
             string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null)
@@ -82,8 +82,8 @@ namespace API.Controllers
             if (stable.OwnerId != userId)
                 return Unauthorized();
 
-            stable.Name = dto.Name;
-            stable.Address = dto.Address;
+            stable.Name = dto.Name ?? stable.Name;
+            stable.Address = dto.Address ?? stable.Address;
 
             _context.Stables.Update(stable);
             await _context.SaveChangesAsync();

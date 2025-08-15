@@ -63,8 +63,16 @@ namespace API.Controllers
             if (oldBox == null) 
                 return NotFound();
 
-            oldBox.Number = box.Number;
-            oldBox.AreaId = box.AreaId;
+            bool areaExists = true;
+            if (box.AreaId != null)
+                areaExists = await _context.Areas.AnyAsync(a => a.Id == box.AreaId);
+
+            if (!areaExists)
+                return NotFound();
+
+
+            oldBox.Number = box.Number ?? oldBox.Number;
+            oldBox.AreaId = box.AreaId ?? oldBox.AreaId;
 
             _context.Boxes.Update(oldBox);
             await _context.SaveChangesAsync();
