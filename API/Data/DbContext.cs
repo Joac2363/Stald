@@ -15,4 +15,5 @@ public class DbContext : IdentityDbContext<User>
     public DbSet<Member> Members { get; set; }
     public DbSet<Area> Areas { get; set; }
     public DbSet<Box> Boxes { get; set; }
+    public DbSet<Event> Events { get; set; }
 }
