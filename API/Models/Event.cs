@@ -13,11 +13,23 @@ namespace API.Models
         public Guid Id { get; set; }
 
         public Guid? SeriesId { get; set; }
-        public DateTime? RecurrenceId { get; set; }
+
+        [ForeignKey(nameof(SeriesId))]
+        public Event? Series { get; set; }
+        
+        public DateTime? OriginalStartDate { get; set; }
+        [Required]
+        
         public int StableId { get; set; }
         [ForeignKey(nameof(StableId))]
+        [Required]
         public Stable Stable { get; set; }
+        
+        [Required]
         public bool isOverride { get; set; }
+        [Required]
+        public bool isRecurring { get; set; }
+        
         public string? RecurrenceRule { get; set; }
 
         [Required]
@@ -25,8 +37,10 @@ namespace API.Models
 
         [Required]
         public DateTime EndDate { get; set; }
+        
         [MaxLength(50)]
         public string Title { get; set; }
+        
         [MaxLength(500)]
         public string Description { get; set; }
     }
