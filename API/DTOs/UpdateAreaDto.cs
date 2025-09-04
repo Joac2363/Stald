@@ -8,8 +8,8 @@ namespace API.DTOs
     {
         [Key]
         public int Id { get; set; }
-        [Required(ErrorMessage = "An Area must have a name.")]
-        [MaxLength(50, ErrorMessage = "An Area name cannot be longer than 50 characters.")]
+        [Required]
+        [MaxLength(50)]
         public string Name { get; set; }
     }
 }

@@ -7,7 +7,7 @@ namespace API.DTOs
     public class CreateAreaDto
     {
         public string Name { get; set; }
-        [Required(ErrorMessage = "An Area must be connected to a Stable.")]
+        [Required]
         public int StableId { get; set; }
     }
 }

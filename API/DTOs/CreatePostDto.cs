@@ -6,10 +6,10 @@ namespace API.DTOs
 {
     public class CreatePostDto
     {
-        [Required(ErrorMessage = "Post must be associated with a stable.")]
+        [Required]
         public int StableId { get; set; }
-        [Required(ErrorMessage = "Title is required.")]
-        [StringLength(50, ErrorMessage = "Title cannot be longer than 50 characters.")]
+        [Required]
+        [StringLength(50)]
         public string Title { get; set; }
         public string Text { get; set; }
         

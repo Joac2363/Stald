@@ -5,16 +5,16 @@ namespace API.DTOs
 {
     public class RegisterDto
     {
-        [Required(ErrorMessage = "Email is required.")]
+        [Required]
         [EmailAddress]
         public string Email { get; set; }
-        [Required(ErrorMessage = "Password is required.")]
+        [Required]
         public string Password { get; set; }
-        [Required(ErrorMessage = "A first name is required.")]
-        [StringLength(50, ErrorMessage = "First name cannot be longer than 50 characters.")]
+        [Required]
+        [StringLength(50)]
         public string FirstName { get; set; }
-        [Required(ErrorMessage = "A last name is required.")]
-        [StringLength(50, ErrorMessage = "last name cannot be longer than 50 characters.")]
+        [Required]
+        [StringLength(50)]
         public string LastName { get; set; }
     }
 }
