@@ -44,7 +44,7 @@ public class EventController : ControllerBase
 
         var overrides = await _context.Events
             .Where(e => e.StableId == stableId)
-            .Where(e => e.EndDate < to)
+            .Where(e => e.EndDate < to.ToUniversalTime())
             .Where(e => e.isOverride)
             .ToArrayAsync();
 
@@ -59,7 +59,6 @@ public class EventController : ControllerBase
                     Id = e.Id,
                     SeriesId = e.SeriesId,
                     OriginalStartDate = e.OriginalStartDate,
-                    StableId = e.StableId,
                     isOverride = e.isOverride,
                     RecurrenceRule = e.RecurrenceRule,
                     StartDate = e.StartDate,
@@ -72,7 +71,7 @@ public class EventController : ControllerBase
 
         var recurringEvents = await _context.Events
             .Where(e => e.StableId == stableId)
-            .Where(e => e.EndDate < to)
+            .Where(e => e.EndDate < to.ToUniversalTime())
             .Where(e => e.isRecurring)
             .ToArrayAsync();
 
@@ -103,8 +102,8 @@ public class EventController : ControllerBase
                         Id = null, // null since they have no unique id
                         SeriesId = e.Id, // e.id since they have to refer back to the original event
                         OriginalStartDate = r.Period.StartTime.AsUtc, // Used for overrides
-                        StableId = e.StableId,
                         isOverride = false,
+                        isRecurring = true,
                         RecurrenceRule = e.RecurrenceRule,
                         StartDate = r.Period.StartTime.AsUtc,
                         EndDate = r.Period.EndTime?.AsUtc ?? r.Period.StartTime.AsUtc.Add(e.EndDate - e.StartDate),
@@ -117,8 +116,8 @@ public class EventController : ControllerBase
 
         var events = await _context.Events
             .Where(e => e.StableId == stableId)
-            .Where(e => e.StartDate > from)
-            .Where(e => e.EndDate < to)
+            .Where(e => e.StartDate > from.ToUniversalTime())
+            .Where(e => e.EndDate < to.ToUniversalTime())
             .Where(e => !e.isOverride)
             .Where(e => !e.isRecurring)
             .ToArrayAsync();
@@ -132,7 +131,6 @@ public class EventController : ControllerBase
                     Id = e.Id,
                     SeriesId = e.SeriesId,
                     OriginalStartDate = e.OriginalStartDate,
-                    StableId = e.StableId,
                     isOverride = e.isOverride,
                     RecurrenceRule = e.RecurrenceRule,
                     StartDate = e.StartDate,
@@ -183,16 +181,16 @@ public class EventController : ControllerBase
     [ProducesResponseType(404)]
     public async Task<IActionResult> Update([FromBody] EventDto dto, int stableId, [FromQuery] bool editAll = false)
     {
-        string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (userId == null)
-            return Unauthorized();
+        //string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        //if (userId == null)
+        //    return Unauthorized();
 
-        var stable = await _context.Stables.FindAsync(stableId);
-        if (stable == null)
-            return NotFound();
+        //var stable = await _context.Stables.FindAsync(stableId);
+        //if (stable == null)
+        //    return NotFound();
 
-        if (stable.OwnerId != userId)
-            return Unauthorized();
+        //if (stable.OwnerId != userId)
+        //    return Unauthorized();
 
 
         var oldEvent = await _context.Events.FirstOrDefaultAsync(e => e.Id == dto.Id);
