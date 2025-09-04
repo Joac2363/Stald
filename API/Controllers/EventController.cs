@@ -266,13 +266,15 @@ public class EventController : ControllerBase
         if (userId == null)
             return Unauthorized();
 
-        var stable = await _context.Stables.FindAsync(stableId);
-        if (stable == null)
-            return NotFound();
-
-        if (stable.OwnerId != userId)
+        var isOwner = _context.Events.Include(e => e.Stable).Any(e => e.Stable.OwnerId == userId);
+        if (!isOwner)
+        {
+            var eventExists = _context.Events.Any(e => e.Id == eventId);
+            if (!eventExists)
+                return NotFound($"An event with Id = '{eventId}' was not found.");
             return Unauthorized();
-
+            
+        }
         var events = _context.Events
             .Where(e => e.SeriesId == eventId || e.Id == eventId);
         _context.Events.RemoveRange(events);
