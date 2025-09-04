@@ -13,7 +13,7 @@ using System.Security.Claims;
 
 namespace API.Controllers;
 
-//[Authorize]
+[Authorize]
 [ApiController]
 [Route("api")]
 public class EventController : ControllerBase
@@ -30,17 +30,17 @@ public class EventController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<EventDto>), 200)]
     public async Task<ActionResult<List<EventDto>>> GetEvents(int stableId, [FromQuery] DateTime from, [FromQuery] DateTime to)
     {
-        //var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        //if (userId == null)
-        //    return Unauthorized();
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null)
+            return Unauthorized();
 
-        //bool userIsMember = await _context.Members.AnyAsync(m => m.UserId == userId && m.StableId == stableId);
-        //if (!userIsMember)
-        //    return Unauthorized();
+        bool userIsMember = await _context.Members.AnyAsync(m => m.UserId == userId && m.StableId == stableId);
+        if (!userIsMember)
+            return Unauthorized();
 
-        //bool stableExists = await _context.Stables.AnyAsync(s => s.Id == stableId);
-        //if (!stableExists)
-        //    return BadRequest();
+        bool stableExists = await _context.Stables.AnyAsync(s => s.Id == stableId);
+        if (!stableExists)
+            return BadRequest();
 
         var overrides = await _context.Events
             .Where(e => e.StableId == stableId)
@@ -149,13 +149,13 @@ public class EventController : ControllerBase
     [ProducesResponseType(400)]
     public async Task<IActionResult> Create([FromBody] EventDto dto, int stableId)
     {
-        //string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        //if (userId == null)
-        //    return Unauthorized();
+        string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null)
+            return Unauthorized();
 
-        //bool userIsOwnerOfStable = await _context.Stables.AnyAsync(s => s.Id == stableId && s.OwnerId == userId);
-        //if (!userIsOwnerOfStable)
-        //    return Unauthorized();
+        bool userIsOwnerOfStable = await _context.Stables.AnyAsync(s => s.Id == stableId && s.OwnerId == userId);
+        if (!userIsOwnerOfStable)
+            return Unauthorized();
 
         var e = new Event
         {
@@ -181,16 +181,16 @@ public class EventController : ControllerBase
     [ProducesResponseType(404)]
     public async Task<IActionResult> Update([FromBody] EventDto dto, int stableId, [FromQuery] bool editAll = false)
     {
-        //string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        //if (userId == null)
-        //    return Unauthorized();
+        string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null)
+            return Unauthorized();
 
-        //var stable = await _context.Stables.FindAsync(stableId);
-        //if (stable == null)
-        //    return NotFound();
+        var stable = await _context.Stables.FindAsync(stableId);
+        if (stable == null)
+            return NotFound();
 
-        //if (stable.OwnerId != userId)
-        //    return Unauthorized();
+        if (stable.OwnerId != userId)
+            return Unauthorized();
 
 
         var oldEvent = await _context.Events.FirstOrDefaultAsync(e => e.Id == dto.Id);
@@ -262,16 +262,16 @@ public class EventController : ControllerBase
     [ProducesResponseType(404)]
     public async Task<IActionResult> Delete(Guid eventId)
     {
-        //string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        //if (userId == null)
-        //    return Unauthorized();
+        string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null)
+            return Unauthorized();
 
-        //var stable = await _context.Stables.FindAsync(stableId);
-        //if (stable == null)
-        //    return NotFound();
+        var stable = await _context.Stables.FindAsync(stableId);
+        if (stable == null)
+            return NotFound();
 
-        //if (stable.OwnerId != userId)
-        //    return Unauthorized();
+        if (stable.OwnerId != userId)
+            return Unauthorized();
 
         var events = _context.Events
             .Where(e => e.SeriesId == eventId || e.Id == eventId);
