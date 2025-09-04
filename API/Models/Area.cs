@@ -7,10 +7,10 @@ namespace API.Models
     {
         [Key]
         public int Id { get; set; }
-        [Required(ErrorMessage = "An Area must have a name.")]
-        [MaxLength(50, ErrorMessage = "An Area name cannot be longer than 50 characters.")]
+        [Required]
+        [MaxLength(50)]
         public string Name { get; set; }
-        [Required(ErrorMessage = "An Area must be connected to a Stable.")]
+        [Required]
         public int StableId { get; set; }
         [ForeignKey(nameof(StableId))]
         public Stable Stable { get; set; }

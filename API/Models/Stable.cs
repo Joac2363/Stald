@@ -8,15 +8,15 @@ namespace API.Models
         [Key]
         public int Id { get; set; }
 
-        [Required(ErrorMessage = "Stable name is required.")]
-        [StringLength(100, ErrorMessage = "Stable name cannot be longer than 100 characters.")]
+        [Required]
+        [StringLength(100)]
         public string Name { get; set; }
 
-        [Required(ErrorMessage = "Address is required.")]
-        [StringLength(200, ErrorMessage = "Address cannot be longer than 200 characters.")]
+        [Required]
+        [StringLength(200)]
         public string Address { get; set; }
 
-        [Required(ErrorMessage = "Owner is required")]
+        [Required]
         public string OwnerId { get; set; }
         [ForeignKey(nameof(OwnerId))]
         public User Owner { get; set; }

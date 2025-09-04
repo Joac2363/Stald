@@ -9,7 +9,7 @@ namespace API.Models
         [ForeignKey(nameof(User))]
         public string UserId { get; set; }
         public User User { get; set; }
-        [Required(ErrorMessage = "Member must be associated with a stable.")]
+        [Required]
         public int StableId { get; set; }
         [ForeignKey(nameof(StableId))]
         public Stable Stable { get; set; }

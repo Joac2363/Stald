@@ -7,10 +7,10 @@ namespace API.Models
     {
         [Key]
         public int Id { get; set; }
-        [Required(ErrorMessage = "Number is required.")]
-        [MaxLength(15, ErrorMessage = "Number may not be longer than 15 characters.")]
+        [Required]
+        [MaxLength(15)]
         public string Number {  get; set; } // is string since box number may be: 'E93' or similar.
-        [Required(ErrorMessage = "Box must be connected to an Area.")]
+        [Required]
         public int AreaId {  get; set; }
         [ForeignKey(nameof(AreaId))]
         public Area Area { get; set; }

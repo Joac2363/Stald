@@ -7,16 +7,16 @@ namespace API.Models
     {
         [Key]
         public int Id { get; set; }
-        [Required(ErrorMessage = "Filename is required.")]
-        [StringLength(25, ErrorMessage = "Filename cannot be longer than 25 characters.")]
+        [Required]
+        [StringLength(25)]
         public string Filename { get; set; }
-        [Required(ErrorMessage = "Content type is required.")]
-        [StringLength(15, ErrorMessage = "Content type cannot be longer than 15 characters.")]
+        [Required]
+        [StringLength(15)]
         public string ContentType { get; set; }
-        [Required(ErrorMessage = "File path is required.")]
-        [StringLength(150, ErrorMessage = "File path cannot be longer than 150 characters.")]
+        [Required]
+        [StringLength(150)]
         public string FilePath { get; set; }
-        [Required(ErrorMessage = "Media must be associated with a post.")]
+        [Required]
         public int PostId { get; set; }
 
         [ForeignKey(nameof(PostId))]
