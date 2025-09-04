@@ -256,6 +256,28 @@ public class EventController : ControllerBase
         await _context.SaveChangesAsync();
         return NoContent();
     }
-}
 
+    [HttpDelete("stable/event/{eventId}")]
+    [ProducesResponseType(204)]
+    [ProducesResponseType(404)]
+    public async Task<IActionResult> Delete(Guid eventId)
+    {
+        //string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        //if (userId == null)
+        //    return Unauthorized();
+
+        //var stable = await _context.Stables.FindAsync(stableId);
+        //if (stable == null)
+        //    return NotFound();
+
+        //if (stable.OwnerId != userId)
+        //    return Unauthorized();
+
+        var events = _context.Events
+            .Where(e => e.SeriesId == eventId || e.Id == eventId);
+        _context.Events.RemoveRange(events);
+        await _context.SaveChangesAsync();
+        return NoContent();
+    }
+}
 
