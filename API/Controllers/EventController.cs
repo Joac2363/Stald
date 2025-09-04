@@ -172,7 +172,7 @@ public class EventController : ControllerBase
         await _context.AddAsync(e);
         await _context.SaveChangesAsync();
 
-        return Created();
+        return StatusCode(201);
     }
 
 
