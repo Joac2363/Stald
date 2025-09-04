@@ -7,5 +7,6 @@
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public Member Member { get; set; }
+        public ICollection<Team> TeamUsers { get; set; }
     }
 }
