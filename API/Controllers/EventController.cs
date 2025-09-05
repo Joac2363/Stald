@@ -141,7 +141,7 @@ public class EventController : ControllerBase
             );
         }
 
-        return returnEvents;
+        return Ok(returnEvents);
     }
 
     [HttpPost("stable/{stableId}/event")]
