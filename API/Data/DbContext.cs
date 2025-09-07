@@ -17,4 +17,5 @@ public class DbContext : IdentityDbContext<User>
     public DbSet<Box> Boxes { get; set; }
     public DbSet<Event> Events { get; set; }
     public DbSet<Team> Teams { get; set; }
+    public DbSet<EventParticipation> EventParticipations { get; set; }
 }
