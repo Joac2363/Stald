@@ -9,7 +9,7 @@ namespace API.Controllers
 {
     [Authorize]
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api")]
     public class BoxController : ControllerBase
     {
         private readonly DbContext _context;
@@ -18,23 +18,30 @@ namespace API.Controllers
             _context = context;
         }
 
-        [HttpPost("stable/{id}/area")]
+        [HttpPost("stable/{stableId}/area/{areaId}")]
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]
-        public async Task<IActionResult> Create([FromBody] CreateBoxDto dto, int id)
+        public async Task<IActionResult> Create([FromBody] CreateBoxDto dto, int stableId, int areaId)
         {
             string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null)
                 return Unauthorized();
 
-            bool userIsOwnerOfStable = await _context.Stables.AnyAsync(s => s.Id == id && s.OwnerId == userId);
+            bool userIsOwnerOfStable = await _context.Stables
+                .AnyAsync(s => s.Id == stableId && s.OwnerId == userId);
             if (!userIsOwnerOfStable)
                 return Unauthorized();
+
+            bool areaExists = await _context.Areas
+                 .Where(a => a.StableId == stableId)
+                 .AnyAsync(a => a.Id == areaId);
+
+            if (!areaExists)
+                return NotFound($"An area with Id = '{areaId}' was not found in stabel with Id = '{stableId}'"); 
 
             var Box = new Box
             {
                 Number = dto.Number,
-                AreaId = dto.AreaId
             };
 
             await _context.Boxes.AddAsync(Box);
@@ -43,40 +50,38 @@ namespace API.Controllers
             return StatusCode(201);
         }
 
-        [HttpPut("stable/{stableId}/area")]
+        [HttpPut("stable/{stableId}/area/box")]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> Update([FromBody] UpdateBoxDto box, int stableId)
+        public async Task<IActionResult> Update([FromBody] UpdateBoxDto box, int stableId, int areaId)
         {
             string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null)
                 return Unauthorized();
 
-            var stable = await _context.Stables.FindAsync(stableId);
-            if (stable == null) 
-                return NotFound();
+            var oldBox = await _context.Boxes
+                .Include(b => b.Area)
+                .Include(b => b.Area.Stable)
+                .FirstOrDefaultAsync(b => b.Id == box.Id);
 
-            if (stable.OwnerId != userId)
+            if (oldBox == null)
+                return NotFound($"A box with Id = '{box.Id}' was not found");
+
+            if (oldBox.Area.Stable.OwnerId != userId)
                 return Unauthorized();
 
-            var oldBox = await _context.Boxes.FindAsync(box.Id);
-            if (oldBox == null) 
-                return NotFound();
-
             oldBox.Number = box.Number;
-            oldBox.AreaId = box.AreaId;
 
-            _context.Boxes.Update(oldBox);
             await _context.SaveChangesAsync();
             
             return NoContent();
 
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("stable/area/box/{boxId}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(int boxId)
         {
             string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null)
@@ -85,9 +90,10 @@ namespace API.Controllers
             var box = await _context.Boxes
                 .Include(b => b.Area)
                 .Include(b => b.Area.Stable)
-                .FirstAsync(b => b.Id == id);
+                .FirstAsync(b => b.Id == boxId);
+
             if (box == null)
-                return NotFound();
+                return NotFound($"A box with Id = '{boxId}' was not found");
 
             if (box.Area.Stable.OwnerId != userId)
                 return Unauthorized();
