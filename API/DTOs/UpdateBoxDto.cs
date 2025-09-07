@@ -11,7 +11,5 @@ namespace API.DTOs
         [Required]
         [MaxLength(15)]
         public string Number { get; set; } // is string since box number may be: 'E93' or similar.
-        [Required]
-        public int AreaId { get; set; }
     }
 }
