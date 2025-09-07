@@ -5,9 +5,11 @@ using Ical.Net.CalendarComponents;
 using Ical.Net.DataTypes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Web.Virtualization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens.Experimental;
 using System.Data.SqlTypes;
 using System.Security.Claims;
 
@@ -273,11 +275,176 @@ public class EventController : ControllerBase
             if (!eventExists)
                 return NotFound($"An event with Id = '{eventId}' was not found.");
             return Unauthorized();
-            
+
         }
         var events = _context.Events
             .Where(e => e.SeriesId == eventId || e.Id == eventId);
         _context.Events.RemoveRange(events);
+        await _context.SaveChangesAsync();
+        return NoContent();
+    }
+
+    // Participants endpoints
+    [HttpGet("stable/{stableId}/event/{eventId}/participants")]
+    [ProducesResponseType(401)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(typeof(GetEventParticipationDto), 200)]
+    public async Task<ActionResult<GetEventParticipationDto>> GetParticipants(int stableId, Guid eventId)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null)
+            return Unauthorized();
+
+        bool userIsMember = await _context.Members.AnyAsync(m => m.UserId == userId && m.StableId == stableId);
+        if (!userIsMember)
+            return Unauthorized();
+
+        bool stableExists = await _context.Stables.AnyAsync(s => s.Id == stableId);
+        if (!stableExists)
+            return BadRequest();
+
+        bool eventExists = _context.Events.Any(e => e.Id == eventId);
+        if (!eventExists)
+            return BadRequest($"An event with Id = '{eventId}' was not found");
+
+        var eventParticipation = await _context.EventParticipations
+            .Include(ep => ep.Users)
+            .Include(ep => ep.Teams)
+            .FirstOrDefaultAsync(e => e.EventId == eventId);
+        if (eventParticipation == null)
+            return new GetEventParticipationDto { EventId = eventId };
+
+        // Map into userDtos
+        var users = eventParticipation.Users
+            .Select(u => new GetUserDto
+            {
+                Id = u.Id,
+                FirstName = u.FirstName,
+                LastName = u.LastName
+            })
+            .ToList();
+
+        // Map into teamDtos
+        var teams = eventParticipation.Teams
+            .Select(t => new GetTeamDto
+            {
+                Id = t.Id,
+                StableId = t.StableId,
+                Name = t.Name,
+                TeamUsers = t.TeamUsers
+                    .Select(tu => new GetUserDto
+                    {
+                        Id = tu.Id,
+                        FirstName = tu.FirstName,
+                        LastName = tu.LastName,
+                    })
+                    .ToList()
+            })
+            .ToList();
+
+
+        return Ok(new GetEventParticipationDto
+        {
+            EventId = eventId,
+            Users = users,
+            Teams = teams
+        });
+
+    }
+
+    [HttpPost("stable/{stableId}/event/{eventId}/participants")]
+    [ProducesResponseType(201)]
+    [ProducesResponseType(400)]
+    public async Task<IActionResult> AddParticipants([FromBody] CreateEventParticipantsDto dto, int stableId, Guid eventId)
+    {
+        string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null)
+            return Unauthorized();
+
+        bool userIsOwnerOfStable = await _context.Stables.AnyAsync(s => s.Id == stableId && s.OwnerId == userId);
+        if (!userIsOwnerOfStable)
+            return Unauthorized();
+
+        var participation = await _context.EventParticipations
+            .Include(ep => ep.Users)
+            .Include(ep => ep.Teams)
+            .FirstOrDefaultAsync(ep => ep.EventId == eventId);
+
+        if (participation == null)
+        {
+            bool eventExists = _context.Events
+                .Where(e => e.StableId == stableId)
+                .Any(e => e.Id == eventId);
+            if (!eventExists)
+                return NotFound($"An event with Id = '{eventId}' was not found in stable with Id = '{stableId}'");
+
+            participation = new EventParticipation { EventId = eventId };
+            await _context.EventParticipations.AddAsync(participation);
+            await _context.SaveChangesAsync();
+        }
+
+        List<User> users = await _context.Users
+            .Include(u => u.Member)
+            .Where(u => u.Member.StableId == stableId)
+            .Where(u => dto.UserIds.Contains(u.Id))
+            .ToListAsync();
+        if (users.Count != dto.UserIds.Count)
+            return NotFound("One or more users were not found.");
+
+        var teams = await _context.Teams
+            .Where(t => dto.TeamIds.Contains(t.Id))
+            .Where(t => t.StableId == stableId)
+            .ToListAsync();
+        if (teams.Count != dto.TeamIds.Count)
+            return NotFound("One or more teams were not found.");
+
+        foreach(var user in users)
+        {
+            if (participation.Users.Any(u => u.Id == user.Id))
+                continue;
+            participation.Users.Add(user);
+        }
+
+        foreach (var team in teams)
+        {
+            if (participation.Teams.Any(t => t.Id == team.Id))
+                continue;
+            participation.Teams.Add(team);
+        }
+
+        await _context.SaveChangesAsync();
+        return NoContent();
+
+    }
+
+    [HttpDelete("stable/event/{eventId}/participant")]
+    [ProducesResponseType(204)]
+    [ProducesResponseType(404)]
+    public async Task<IActionResult> DeleteParticipant([FromBody] CreateEventParticipantsDto dto, Guid eventId) 
+    {
+        string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null)
+            return Unauthorized();
+
+        var e = await _context.Events
+            .Include(e => e.Stable)
+            .FirstOrDefaultAsync(e => e.Id == eventId);
+        if (e == null)
+            return NotFound($"An event with Id = '{eventId}' was not found.");
+
+        if (e.Stable.OwnerId != userId)
+            return Unauthorized();
+
+        var participation = await _context.EventParticipations.FirstOrDefaultAsync(ep => ep.EventId == eventId);
+        if (participation == null)
+            return NotFound($"An event with Id = '{eventId}' was not found.");
+
+        participation.Users.ToList().RemoveAll(u => dto.UserIds.Contains(u.Id));
+        participation.Teams.ToList().RemoveAll(t => dto.TeamIds.Contains(t.Id));
+
+        if (participation.Users.Count == 0 && participation.Teams.Count == 0)
+            _context.EventParticipations.Remove(participation);
+
         await _context.SaveChangesAsync();
         return NoContent();
     }
