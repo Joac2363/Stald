@@ -16,6 +16,8 @@ namespace API.Models
         [StringLength(50)]
         public string Name { get; set; }
         [Required]
-        public ICollection<User> TeamUsers { get;set; }
+        public ICollection<User> TeamUsers { get; set; } = new List<User>();
+        public ICollection<EventParticipation> EventParticipations { get; set; } = new List<EventParticipation>();
+
     }
 }
