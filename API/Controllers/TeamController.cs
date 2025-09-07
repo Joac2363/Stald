@@ -47,7 +47,7 @@ public class TeamController : ControllerBase
         {
             var userDtos = new List<GetUserDto>();
             foreach (var user in team.TeamUsers)
-                userDtos.Add(new GetUserDto{FirstName = user.FirstName,LastName = user.LastName});
+                userDtos.Add(new GetUserDto{Id = user.Id, FirstName = user.FirstName,LastName = user.LastName});
 
             var teamDto = new GetTeamDto
             {
@@ -109,7 +109,7 @@ public class TeamController : ControllerBase
     [HttpPut("stable/{stableId}/team")]
     [ProducesResponseType(204)]
     [ProducesResponseType(404)]
-    public async Task<IActionResult> Update([FromBody] UpdateTeamDto dto, int stableId, [FromQuery] bool editAll = false)
+    public async Task<IActionResult> Update([FromBody] UpdateTeamDto dto, int stableId)
     {
         string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userId == null)
