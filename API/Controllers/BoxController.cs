@@ -18,10 +18,10 @@ namespace API.Controllers
             _context = context;
         }
 
-        [HttpPost("stable/{stableId}/area/{areaId}")]
+        [HttpPost("stable/{stableId}/area/{areaId}/box")]
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]
-        public async Task<IActionResult> Create([FromBody] CreateBoxDto dto, int stableId, int areaId)
+        public async Task<IActionResult> Create([FromBody] List<CreateBoxDto> dtos, int stableId, int areaId)
         {
             string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null)
@@ -32,19 +32,26 @@ namespace API.Controllers
             if (!userIsOwnerOfStable)
                 return Unauthorized();
 
-            bool areaExists = await _context.Areas
-                 .Where(a => a.StableId == stableId)
-                 .AnyAsync(a => a.Id == areaId);
+            var isGreenArea = await _context.Areas
+                .Where(a => a.StableId == stableId && a.Id == areaId)
+                .Select(a => (bool?)a.IsGreenArea)
+                .FirstOrDefaultAsync();
 
-            if (!areaExists)
-                return NotFound($"An area with Id = '{areaId}' was not found in stabel with Id = '{stableId}'"); 
 
-            var Box = new Box
-            {
-                Number = dto.Number,
-            };
+            if (isGreenArea == null)
+                return NotFound($"An area with Id = '{areaId}' was not found in stabel with Id = '{stableId}'");
 
-            await _context.Boxes.AddAsync(Box);
+            if (isGreenArea == true)
+                return BadRequest("Cannot add boxes to Area marked as IsGreenArea");
+
+            IEnumerable<Box> boxes = dtos
+                .Select(dto => new Box
+                {
+                    AreaId = areaId,
+                    Number = dto.Number
+                });
+
+            await _context.Boxes.AddRangeAsync(boxes);
             await _context.SaveChangesAsync();
 
             return StatusCode(201);
