@@ -14,6 +14,7 @@ namespace API.Models
         public int AreaId {  get; set; }
         [ForeignKey(nameof(AreaId))]
         public Area Area { get; set; }
+        public Horse? Horse { get; set; }
 
         //TODO:
         // Add horse support (lol)

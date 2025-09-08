@@ -15,7 +15,8 @@ namespace API.Models
         [ForeignKey(nameof(StableId))]
         public Stable Stable { get; set; }
         public bool IsGreenArea { get; set; }
-        public ICollection<Box> Boxes { get; set; }
+        public ICollection<Box> Boxes { get; set; } = new List<Box>();
+        public ICollection<Horse> Horses { get; set; } = new List<Horse>();
 
 
         // NOTICE:
