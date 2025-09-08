@@ -21,8 +21,8 @@ namespace API.Controllers
         [HttpGet("stable/{stableId}/areas")]
         [ProducesResponseType(401)]
         [ProducesResponseType(400)]
-        [ProducesResponseType(typeof(IEnumerable<Area>), 200)]
-        public async Task<ActionResult<IEnumerable<Area>>> Get(int stableId, [FromQuery] bool includeBoxes = true)
+        [ProducesResponseType(typeof(IEnumerable<GetAreaDto>), 200)]
+        public async Task<ActionResult<IEnumerable<GetAreaDto>>> Get(int stableId)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null)
@@ -36,25 +36,27 @@ namespace API.Controllers
             if (!stableExists)
                 return BadRequest();
 
-            IEnumerable<Area> areas;
-            if (includeBoxes)
-            {
-                areas = await _context.Areas
-                    .Include(a => a.Boxes)
-                    .Where(a => a.StableId == stableId)
-                    .ToArrayAsync();
-            }else
-            {
-                areas = await _context.Areas
-                    .Where(a => a.StableId == stableId)
-                    .ToArrayAsync();
-            }
+            
+            var areas = await _context.Areas
+                .Include(a => a.Boxes)
+                .Where(a => a.StableId == stableId)
+                .ToArrayAsync();
+
+            IEnumerable<GetAreaDto> dtos = areas
+                .Select(a => new GetAreaDto
+                {
+                    Id = a.Id,
+                    Name = a.Name,
+                    StableId = a.StableId,
+                    IsGreenArea = a.IsGreenArea,
+                    Boxes = a.Boxes,
+                });
 
             return Ok(areas);
         }
 
 
-        [HttpPost("stable/{id}")]
+        [HttpPost("stable/{stableId}/area")]
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]
         public async Task<IActionResult> Create([FromBody] CreateAreaDto dto, int stableId)
@@ -67,13 +69,14 @@ namespace API.Controllers
             if (!userIsOwnerOfStable)
                 return Unauthorized();
             
-            var Area = new Area
+            var area = new Area
             {
                 Name = dto.Name,
-                StableId = dto.StableId
+                IsGreenArea = dto.IsGreenArea,
+                StableId = stableId
             };
 
-            await _context.Areas.AddAsync(Area);
+            await _context.Areas.AddAsync(area);
             await _context.SaveChangesAsync();
 
             return StatusCode(201);
@@ -99,9 +102,13 @@ namespace API.Controllers
             if (oldArea == null) 
                 return NotFound();
 
-            oldArea.Name = area.Name;
+            bool hasBoxes = await _context.Boxes.AnyAsync(b => b.AreaId == area.Id);
+            if (hasBoxes && area.IsGreenArea)
+                return BadRequest("Cannot make area into GreenArea, when boxes are associated");
 
-            _context.Areas.Update(oldArea);
+            oldArea.Name = area.Name;
+            oldArea.IsGreenArea = area.IsGreenArea;
+
             await _context.SaveChangesAsync();
             
             return NoContent();
@@ -132,6 +139,5 @@ namespace API.Controllers
 
         //TODO:
         // Make employees able to Create update and delete areas
-        // Add GreenArea option
     }
 }
