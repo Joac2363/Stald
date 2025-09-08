@@ -11,5 +11,6 @@ namespace API.DTOs
         [Required]
         [MaxLength(50)]
         public string Name { get; set; }
+        public bool IsGreenArea {  get; set; }
     }
 }

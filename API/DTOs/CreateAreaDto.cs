@@ -7,7 +7,6 @@ namespace API.DTOs
     public class CreateAreaDto
     {
         public string Name { get; set; }
-        [Required]
-        public int StableId { get; set; }
+        public bool IsGreenArea {  get; set; }
     }
 }
