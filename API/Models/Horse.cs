@@ -12,6 +12,9 @@ namespace API.Models
         [Required]
         [StringLength(50)]
         public string Name { get; set; }
+        public int? StableId { get; set; }
+        [ForeignKey(nameof(StableId))]]
+        public Stable Stable { get; set; }
         [Required]
         public bool IsOwnedByStable { get; set; }
         public Guid? OwnerId { get; set; }
